@@ -81,7 +81,7 @@ def get_list_files_dat(pinfo, case, num_cycle):
 
 def clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,mesh_data,stl_surf_m,plot_flag):
     vessel_name = dpoints.get("points{}".format(i_vessel))[0]
-    vessel_points = dpoints.get("points{}".format(i_vessel))[1]
+    vessel_points = dpoints.get("points{}".format(i_vessel))[1] 
     vessel_vectors = dvectors.get("vectors{}".format(i_vessel))[1]
     vessel_radii = dradii.get("radii{}".format(i_vessel))[1]
 
@@ -96,6 +96,7 @@ def clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_st
     # Determine connectivity
     mesh_clipped_connected = mesh_clipped.connectivity()
 
+
     # # Plot clipped surface
     # p = pv.Plotter()
     # p.add_mesh(mesh_clipped_connected, scalars='RegionId',label=vessel_name)
@@ -103,7 +104,7 @@ def clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_st
     # p.add_mesh(stl_surf_m, opacity=0.3)
     # p.show()
 
-   # which_branch_id = int(input('Which branch is correct -- '))
+    #which_branch_id = int(input('Which branch is correct -- '))
     
     regionID_list = np.unique(mesh_clipped_connected['RegionId'])
 
@@ -132,15 +133,15 @@ def clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_st
         distance_list.append(distance_between_center_midpoint)
         #print(distance_between_center_midpoint)
 
-        # p = pv.Plotter()
-        # p.add_mesh(stl_surf_m, opacity=0.3)
-        # p.add_mesh(regionID_volume,label=vessel_name)
-        # p.add_legend(size=(.2, .2), loc='upper right')
-        # p.show()
+        p = pv.Plotter()
+        p.add_mesh(stl_surf_m, opacity=0.3)
+        p.add_mesh(regionID_volume,label=vessel_name)
+        p.add_legend(size=(.2, .2), loc='upper right')
+        p.show()
         
-    # Determine the region id by minimizing
+    # # Determine the region id by minimizing
 
-    which_branch_id = np.argmin(distance_list) #int(input('region id -- ')) #
+    which_branch_id = int(input('region id -- ')) #np.argmin(distance_list) #
     
     # Identify which cells are associated with the branch
     clipped_cells = np.where(mesh_clipped_connected['RegionId']==which_branch_id)[0]
@@ -260,7 +261,7 @@ dvectors = load_dict(centerline_data_path +"vectors_" + pinfo + "_" + case)
 dpoints = load_dict(centerline_data_path +"points_" + pinfo + "_" + case)
 dradii= load_dict(centerline_data_path +"radii_" + pinfo + "_" + case)
 
-# Instantiate dictionaries
+#% Instantiate dictionaries
 dsliceindex, dbranchid,dcenterindices = {}, {},{}
 
 # Get list of filenames
@@ -305,7 +306,7 @@ else:
     BAS_slice_index= -1
     
 # Determine which is the point associated with the first cut plane (beginning or end of points)
-#BAS_slice_index = int(input('Which point defines the cut plane for the basilar artery? 0: first point, -1: last point -- '))
+
 if BAS_slice_index == 0:
     invert_status = True
 else:
@@ -327,7 +328,7 @@ if plot_flag == 1:
 
 # Switch the direction of the slicing compared to BAS slice
 else:
-    mid_slice_index = 4 #int(input('Which point defines the CoW slice? -- '))
+    mid_slice_index = 6
 
 
 if BAS_slice_index == 0:
@@ -549,9 +550,9 @@ for vessel_name in one_slice_vessels:
     print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
 
     
-#% Slice vessels that require 2 slices
+#%% Slice vessels that require 2 slices
 
-two_slice_vessels = ['L_A1','R_A1','L_P1','R_P1'] #
+two_slice_vessels = ['L_A1','R_A1','L_P1','R_P1'] #'
 anterior_two_slice_vessels = ['L_A1','R_A1']
 
 for vessel_name in two_slice_vessels:
@@ -925,6 +926,115 @@ save_dict(dcenterindices, results_path +'centerpoint_indices_' + pinfo + '_' + c
 print('Saved dictionaries')
 
 
+# #%% One slice vessels
+
+# one_slice_vessels = ['L_A2']  #
+# anterior_one_slice_vessels = ['L_MCA','R_MCA','L_A2','R_A2']
+# slice_index = 0
+# invert_status = True
+
+# for vessel_name in one_slice_vessels:
+#     i_vessel = all_vessel_names.index(vessel_name)
+    
+#     tic = time.perf_counter()
+#     if vessel_name in anterior_one_slice_vessels:
+#         branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,anterior,stl_surf_m,plot_flag)
+#     else:
+#         branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,posterior,stl_surf_m,plot_flag)
+    
+#     toc = time.perf_counter()
+#     time_minutes = (toc-tic)/60
+    
+#     branch_centers = branch_mesh.cell_centers()
+#     branch_center_points = branch_centers.points
+#     branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
+#     branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
+
+#     # plot = pv.Plotter()
+#     # plot.add_mesh(branch_segment_extracted)
+#     # plot.add_mesh(stl_surf_m,opacity=0.3)
+#     # plot.show() 
+    
+#     # Store slice index + invert status and branchid in dictionaries
+#     dsliceindex["sliceindex{}".format(i_vessel)] = vessel_name, slice_index, invert_status
+#     dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
+#     dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
+    
+#     print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
+
+
+# #%% Slice vessels that require 2 slices
+
+# two_slice_vessels = ['R_P1'] #
+# anterior_two_slice_vessels = ['L_A1','R_A1']
+
+# for vessel_name in two_slice_vessels:
+#     # Check that the collateral pathway is present
+#     if vessel_name in all_vessel_names:
+#         i_vessel = all_vessel_names.index(vessel_name)
+        
+#         # Info for first slice
+#         slice_index = -1 
+#         invert_status = False
+        
+#         # Store slice index for first slice
+#         dsliceindex["sliceindex{}".format(i_vessel)] = vessel_name, slice_index, invert_status
+        
+#         tic = time.perf_counter()
+#         if vessel_name in anterior_two_slice_vessels:
+#             first_clip = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,anterior,stl_surf_m,plot_flag)
+#             # Reverse direction of the slice
+#             if slice_index == 0:
+#                 slice_index = -1
+#                 invert_status = False
+#             else:
+#                 slice_index = 0
+#                 invert_status = True
+#             branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,first_clip,stl_surf_m,plot_flag)
+#         else:
+#             first_clip = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,posterior,stl_surf_m,plot_flag)
+#             # Reverse direction of the slice
+#             if slice_index == 0:
+#                 slice_index = -1
+#                 invert_status = False
+#             else:
+#                 slice_index = 0
+#                 invert_status = True
+
+#             branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,first_clip,stl_surf_m,plot_flag)
+        
+#         toc = time.perf_counter()
+#         time_minutes = (toc-tic)/60
+        
+#         branch_centers = branch_mesh.cell_centers()
+#         branch_center_points = branch_centers.points
+#         branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
+#         branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
+
+#         # plot = pv.Plotter()
+#         # plot.add_mesh(branch_segment_extracted)
+#         # plot.add_mesh(stl_surf_m,opacity=0.3)
+#         # plot.show() 
+
+#         # Store branchid in dictionary
+#         dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
+#         dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
+        
+#         print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
+
+
+
+
+
+
+
+
+
+
+
+
+#%% pt39 with missing right A1
+
 
 #%% Left
 tic = time.perf_counter()
@@ -944,9 +1054,138 @@ toc = time.perf_counter()
 time_minutes = (toc-tic)/60
 print(f"left slices  took {time_minutes:0.4f} minutes")
 
-#%% Pcoms that require 2 slices
+#%%
+two_slice_vessels = ['L_A1'] #
+anterior_two_slice_vessels = ['L_A1','R_A1']
 
-Pcom_vessels = ['L_PCOM']
+for vessel_name in two_slice_vessels:
+    # Check that the collateral pathway is present
+    if vessel_name in all_vessel_names:
+        i_vessel = all_vessel_names.index(vessel_name)
+        
+        # Info for first slice
+        slice_index = 0 
+        invert_status = True 
+        
+        # Store slice index for first slice
+        dsliceindex["sliceindex{}".format(i_vessel)] = vessel_name, slice_index, invert_status
+        
+        tic = time.perf_counter()
+        if vessel_name in anterior_two_slice_vessels:
+            first_clip = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,left,stl_surf_m,plot_flag)
+            # Reverse direction of the slice
+            if slice_index == 0:
+                slice_index = -1
+                invert_status = False
+            else:
+                slice_index = 0
+                invert_status = True
+            branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,first_clip,stl_surf_m,plot_flag)
+        else:
+            first_clip = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,posterior,stl_surf_m,plot_flag)
+            # Reverse direction of the slice
+            if slice_index == 0:
+                slice_index = -1
+                invert_status = False
+            else:
+                slice_index = 0
+                invert_status = True
+
+            branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,first_clip,stl_surf_m,plot_flag)
+        
+        toc = time.perf_counter()
+        time_minutes = (toc-tic)/60
+        
+        branch_centers = branch_mesh.cell_centers()
+        branch_center_points = branch_centers.points
+        branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
+        branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
+
+        # plot = pv.Plotter()
+        # plot.add_mesh(branch_segment_extracted)
+        # plot.add_mesh(stl_surf_m,opacity=0.3)
+        # plot.show() 
+
+        # Store branchid in dictionary
+        dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
+        dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
+        
+        print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
+        
+#%% Right
+tic = time.perf_counter()
+invert_status = True
+right_geom_data_filename = geometry_path + 'left.dat'    
+right = clip_by_dat_file(left_geom_data_filename,cow_only,invert_status,stl_surf_m,plot_flag)
+
+right_centers = right.cell_centers()
+right_center_points = right.points
+right_center_point_indices = mesh_data_final.find_containing_cell(right_center_points)
+right_segment_extracted = mesh_data_final.extract_cells(right_center_point_indices)
+
+i_store = num_vessels+4
+dcenterindices["indices{}".format(i_store)] = 'right', right_center_point_indices    
+
+toc = time.perf_counter()
+time_minutes = (toc-tic)/60
+print(f"left slices  took {time_minutes:0.4f} minutes")
+
+#%%
+
+three_slice_vessels = ['R_TICA']
+for vessel_name in three_slice_vessels:
+    tic = time.perf_counter()
+    
+    i_vessel = all_vessel_names.index(vessel_name)
+    
+    tic = time.perf_counter()
+    slice_dat_filename = geometry_path + vessel_name.lower() + '.dat'
+    
+    # Clip with .dat file
+    invert_status = False
+    first_clip = clip_by_dat_file(slice_dat_filename,right,invert_status,stl_surf_m,plot_flag)
+
+    toc = time.perf_counter()
+    time_minutes = (toc-tic)/60
+
+
+    # Clip using a point
+    slice_index = 0
+    invert_status = True
+    second_clip = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,first_clip,stl_surf_m,plot_flag)
+    
+    dsliceindex["sliceindex{}".format(i_vessel)] = vessel_name, slice_index, invert_status
+    
+    # Reverse direction of the slice
+    if slice_index == 0:
+        slice_index = -1
+        invert_status = False
+    else:
+        slice_index = 0
+        invert_status = True
+    branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,second_clip,stl_surf_m,plot_flag)
+    toc = time.perf_counter()
+    time_minutes = (toc-tic)/60
+
+    
+    branch_centers = branch_mesh.cell_centers()
+    branch_center_points = branch_centers.points
+    branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
+    branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
+
+    # plot = pv.Plotter()
+    # plot.add_mesh(branch_segment_extracted)
+    # plot.add_mesh(stl_surf_m,opacity=0.3)
+    # plot.show() 
+
+    # Store branchid in dictionary
+    dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
+    dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
+    
+    print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
+
+#%%
+Pcom_vessels = ['R_PCOM']
 
 for vessel_name in Pcom_vessels:
     # Check that the collateral pathway is present
@@ -964,7 +1203,7 @@ for vessel_name in Pcom_vessels:
         tic = time.perf_counter()
 
         first_clip = clip_mesh_by_largest(
-              dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, left, stl_surf_m, plot_flag) #left,
+              dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, right, stl_surf_m, plot_flag) #left,
         
         # Reverse direction of the slice
         if slice_index == 0:
@@ -995,6 +1234,124 @@ for vessel_name in Pcom_vessels:
         dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
         
         print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
+
+
+#%% Slice vessels that require 2 slices
+
+two_slice_vessels = ['L_P1'] #'
+anterior_two_slice_vessels = ['L_A1','R_A1']
+
+for vessel_name in two_slice_vessels:
+    # Check that the collateral pathway is present
+    if vessel_name in all_vessel_names:
+        i_vessel = all_vessel_names.index(vessel_name)
+        
+        # Info for first slice
+        slice_index = -1 
+        invert_status = False
+        
+        # Store slice index for first slice
+        dsliceindex["sliceindex{}".format(i_vessel)] = vessel_name, slice_index, invert_status
+        
+        tic = time.perf_counter()
+        if vessel_name in anterior_two_slice_vessels:
+            first_clip = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,anterior,stl_surf_m,plot_flag)
+            # Reverse direction of the slice
+            if slice_index == 0:
+                slice_index = -1
+                invert_status = False
+            else:
+                slice_index = 0
+                invert_status = True
+            branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,first_clip,stl_surf_m,plot_flag)
+        else:
+            first_clip = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,posterior,stl_surf_m,plot_flag)
+            # Reverse direction of the slice
+            if slice_index == 0:
+                slice_index = -1
+                invert_status = False
+            else:
+                slice_index = 0
+                invert_status = True
+
+            branch_mesh, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,slice_index,invert_status,first_clip,stl_surf_m,plot_flag)
+        
+        toc = time.perf_counter()
+        time_minutes = (toc-tic)/60
+        
+        branch_centers = branch_mesh.cell_centers()
+        branch_center_points = branch_centers.points
+        branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
+        branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
+
+
+        # plot = pv.Plotter()
+        # plot.add_mesh(branch_segment_extracted)
+        # plot.add_mesh(stl_surf_m,opacity=0.3)
+        # plot.show() 
+
+        # Store branchid in dictionary
+        dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
+        dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
+        
+        print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")        
+        
+    
+#%%
+
+# #%% Pcoms that require 2 slices
+
+# Pcom_vessels = ['L_PCOM']
+
+# for vessel_name in Pcom_vessels:
+#     # Check that the collateral pathway is present
+#     if vessel_name in all_vessel_names:
+#         i_vessel = all_vessel_names.index(vessel_name)
+
+#         # Info for first slice
+#         slice_index = -1 #0
+#         invert_status = False #True
+
+#         # Store slice index for first slice
+#         dsliceindex["sliceindex{}".format(
+#             i_vessel)] = vessel_name, slice_index, invert_status
+
+#         tic = time.perf_counter()
+
+#         first_clip = clip_mesh_by_largest(
+#               dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, left, stl_surf_m, plot_flag) #left,
+        
+#         # Reverse direction of the slice
+#         if slice_index == 0:
+#             slice_index = -1
+#             invert_status = False
+#         else:
+#             slice_index = 0
+#             invert_status = True
+            
+#         branch_mesh, branch_id = clip_mesh_by_regionid(
+#             dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, first_clip, stl_surf_m,plot_flag)
+
+#         toc = time.perf_counter()
+#         time_minutes = (toc-tic)/60
+        
+#         branch_centers = branch_mesh.cell_centers()
+#         branch_center_points = branch_centers.points
+#         branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
+#         branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
+
+#         # plot = pv.Plotter()
+#         # plot.add_mesh(branch_segment_extracted)
+#         # plot.add_mesh(stl_surf_m,opacity=0.3)
+#         # plot.show() 
+
+#         # Store branchid in dictionary
+#         dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
+#         dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
+        
+#         print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
+
+
 
 
 #%%
@@ -1022,55 +1379,55 @@ for vessel_name in Pcom_vessels:
 
 #%%
 
-Pcom_vessels = ['R_PCOM']
+# Pcom_vessels = ['L_PCOM']
 
-for vessel_name in Pcom_vessels:
-    # Check that the collateral pathway is present
-    if vessel_name in all_vessel_names:
-        i_vessel = all_vessel_names.index(vessel_name)
+# for vessel_name in Pcom_vessels:
+#     # Check that the collateral pathway is present
+#     if vessel_name in all_vessel_names:
+#         i_vessel = all_vessel_names.index(vessel_name)
 
-        # Info for first slice
-        slice_index = -1
-        invert_status = False
+#         # Info for first slice
+#         slice_index = 0
+#         invert_status = True
 
-        # Store slice index for first slice
-        dsliceindex["sliceindex{}".format(
-            i_vessel)] = vessel_name, slice_index, invert_status
+#         # Store slice index for first slice
+#         dsliceindex["sliceindex{}".format(
+#             i_vessel)] = vessel_name, slice_index, invert_status
 
-        tic = time.perf_counter()
+#         tic = time.perf_counter()
 
-        first_clip = clip_mesh_by_largest(
-              dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, cow_only, stl_surf_m,plot_flag)
+#         first_clip = clip_mesh_by_largest(
+#               dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, cow_only, stl_surf_m,plot_flag)
         
-        # Reverse direction of the slice
-        if slice_index == 0:
-            slice_index = -1
-            invert_status = False
-        else:
-            slice_index = 0
-            invert_status = True
+#         # Reverse direction of the slice
+#         if slice_index == 0:
+#             slice_index = -1
+#             invert_status = False
+#         else:
+#             slice_index = 0
+#             invert_status = True
             
-        branch_mesh, branch_id = clip_mesh_by_regionid(
-            dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, first_clip, stl_surf_m,plot_flag)
+#         branch_mesh, branch_id = clip_mesh_by_regionid(
+#             dpoints, dvectors, dradii, i_vessel, slice_index, invert_status, first_clip, stl_surf_m,plot_flag)
 
-        toc = time.perf_counter()
-        time_minutes = (toc-tic)/60
+#         toc = time.perf_counter()
+#         time_minutes = (toc-tic)/60
         
-        branch_centers = branch_mesh.cell_centers()
-        branch_center_points = branch_centers.points
-        branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
-        branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
+#         branch_centers = branch_mesh.cell_centers()
+#         branch_center_points = branch_centers.points
+#         branch_center_point_indices = mesh_data_final.find_containing_cell(branch_center_points)
+#         branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
 
-        # plot = pv.Plotter()
-        # plot.add_mesh(branch_segment_extracted)
-        # plot.add_mesh(stl_surf_m,opacity=0.3)
-        # plot.show() 
+#         # plot = pv.Plotter()
+#         # plot.add_mesh(branch_segment_extracted)
+#         # plot.add_mesh(stl_surf_m,opacity=0.3)
+#         # plot.show() 
 
-        # Store branchid in dictionary
-        dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
-        dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
+#         # Store branchid in dictionary
+#         dbranchid["branchid{}".format(i_vessel)] = vessel_name, branch_id
+#         dcenterindices["indices{}".format(i_vessel)] = vessel_name, branch_center_point_indices
         
-        print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
+#         print(f"{vessel_name:s} slice  took {time_minutes:0.4f} minutes")
 
 
 #%%
@@ -1122,33 +1479,33 @@ for vessel_name in Pcom_vessels:
 
 
 
+#%%
 
+# #%% Slice CoW with basilar.dat
 
-#%% Slice CoW with basilar.dat
+# # Clip with .dat file
+# invert_status = False
+# vessel_name = 'basilar'
+# slice_dat_filename = geometry_path + vessel_name.lower() + '.dat'
+# cow_only = clip_by_dat_file(slice_dat_filename,mesh_data_final,invert_status,stl_surf_m,plot_flag)
 
-# Clip with .dat file
-invert_status = False
-vessel_name = 'basilar'
-slice_dat_filename = geometry_path + vessel_name.lower() + '.dat'
-cow_only = clip_by_dat_file(slice_dat_filename,mesh_data_final,invert_status,stl_surf_m,plot_flag)
+# cow_centers = cow_only.cell_centers()
+# cow_center_points = cow_centers.points
+# cow_center_point_indices = mesh_data_final.find_containing_cell(cow_center_points)
+# cow_segment_extracted = mesh_data_final.extract_cells(cow_center_point_indices)
 
-cow_centers = cow_only.cell_centers()
-cow_center_points = cow_centers.points
-cow_center_point_indices = mesh_data_final.find_containing_cell(cow_center_points)
-cow_segment_extracted = mesh_data_final.extract_cells(cow_center_point_indices)
+# # plot = pv.Plotter()
+# # plot.add_mesh(cow_segment_extracted)
+# # plot.add_mesh(stl_surf_m,opacity=0.3)
+# # plot.show()
 
-# plot = pv.Plotter()
-# plot.add_mesh(cow_segment_extracted)
-# plot.add_mesh(stl_surf_m,opacity=0.3)
-# plot.show()
+# mid_slice_index = 0
 
-mid_slice_index = 0
+# #% Store slice index and invert status in dictionary
+# i_store = num_vessels
+# dsliceindex["sliceindex{}".format(i_store)] = "cow", mid_slice_index, invert_status
+# dcenterindices["indices{}".format(i_store)] = 'cow', cow_center_point_indices
 
-#% Store slice index and invert status in dictionary
-i_store = num_vessels
-dsliceindex["sliceindex{}".format(i_store)] = "cow", mid_slice_index, invert_status
-dcenterindices["indices{}".format(i_store)] = 'cow', cow_center_point_indices
-
-print(f"Isolated CoW took {time_minutes:0.4f} minutes")
+# print(f"Isolated CoW took {time_minutes:0.4f} minutes")
 
 
