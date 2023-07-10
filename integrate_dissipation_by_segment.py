@@ -175,10 +175,8 @@ def main(pinfo,case):
     save_dict(ddissipation, results_path +'dissipation_' + pinfo + '_' + case)
     print('Saved dissipation dictionary')
 
-
-main('vsp27','vasospasm')
-#main('pt28','vasospasm')
-
+main('pt40','vasospasm')
+main('pt39','baseline')
 
 
 
