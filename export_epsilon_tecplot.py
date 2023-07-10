@@ -105,4 +105,9 @@ def main(pinfo,case):
     print(f"Tecplot ASCII export took {time_minutes:0.4f} minutes")
 
 
-main('vsp19','baseline')
+main('pt39','baseline')
+main('pt40','vasospasm')
+
+
+
+
