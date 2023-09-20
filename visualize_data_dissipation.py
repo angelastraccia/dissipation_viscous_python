@@ -184,7 +184,7 @@ for i_vessel in range(num_vessels):
     #df_color_vessel.loc()
     df_colors_all_vessels = pd.concat([df_colors_all_vessels, df_color_vessel],axis=1)
 
-#%% Plot heat map
+#% Plot heat map
 
 f,(ax1,ax2,ax3,ax4) = plt.subplots(1,4,figsize = (25,17))
 
@@ -209,10 +209,38 @@ for t in ax4.texts: t.set_text(t.get_text() + " %")
 ax4.set_title('Percent difference',fontsize=30)
 ax4.set_yticks([])
 
-plt.savefig(figure_path_baseline + "plot_heatmap_dissipation_" + pinfo + ".png")
-plt.savefig(figure_path_vasospasm + "plot_heatmap_dissipation_" + pinfo + ".png")
+plt.savefig(figure_path_baseline + "plot_heatmap_dissipation_threshold_" + str(percent_diff_max) + "_" + pinfo + ".png")
+plt.savefig(figure_path_vasospasm + "plot_heatmap_dissipation_threshold_" + str(percent_diff_max) + "_" + pinfo + ".png")
 
 # Export color data for percent change in resistance to CSV file
+df_colors_all_vessels.to_csv(dissipation_path_baseline + pinfo + "_colors_dissipation_threshold_" + str(percent_diff_max) + ".csv")
+df_colors_all_vessels.to_csv(dissipation_path_vasospasm + pinfo + "_colors_dissipation_threshold_" + str(percent_diff_max) + ".csv")
 
-df_colors_all_vessels.to_csv(dissipation_path_baseline + pinfo + "_colors_dissipation.csv")
-df_colors_all_vessels.to_csv(dissipation_path_vasospasm + pinfo + "_colors_dissipation.csv")
+#%% Write data to CSV
+
+vessel_list = ["L_MCA","R_MCA","L_A2","R_A2","L_P2","R_P2","L_TICA","R_TICA","BAS",
+               "L_A1","R_A1","L_PCOM","R_PCOM","L_P1","R_P1"]
+
+
+df_percent_diff_all_vessels = pd.DataFrame()
+
+for vessel_of_interest in vessel_list:
+
+    # Create data frame with all vessels and percent change
+    
+    if vessel_of_interest in df_all_vessels.index:
+        
+        vessel_percent_diff_data = {vessel_of_interest: df_all_vessels.loc[vessel_of_interest,"dissipation per volume percent difference"]}
+        
+        print(df_all_vessels.loc[vessel_of_interest,"dissipation per volume percent difference"])
+         
+    else:
+        vessel_percent_diff_data = {vessel_of_interest: 'nan'}
+        print('missing')
+        
+    df_percent_diff_vessel =  pd.DataFrame(vessel_percent_diff_data, index=[pinfo])
+    
+    df_percent_diff_all_vessels = pd.concat([df_percent_diff_all_vessels, df_percent_diff_vessel],axis=1)
+
+
+df_percent_diff_all_vessels.to_csv(dissipation_path_vasospasm + pinfo + "_dissipation_percent_difference.csv")
