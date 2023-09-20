@@ -85,7 +85,7 @@ def get_list_files_dat(pinfo, case, num_cycle):
 pinfo = input('Patient number -- ') 
 case = input ('Condition -- ')
 
-results_path = 'L:/vasospasm/' + pinfo + '/' + case + '/4-results/pressure_resistance/'
+results_path = 'L:/vasospasm/' + pinfo + '/' + case + '/4-results/pressure_resistance/'        plot_spaced_points["vectors"] = downsampled_normal*0.001
 
 fname_stl_m = 'L:/vasospasm/' + pinfo + '/' + case + \
     '/1-geometry/' + pinfo + '_' + case + '_final.stl'
@@ -98,6 +98,7 @@ dvectors_original = load_dict(results_path +"vectors_original_" + pinfo + "_" + 
 dpoints_cleaned = load_dict(results_path + 'points_' + pinfo + '_' + case)
 dvectors_cleaned = load_dict(results_path + 'vectors_' + pinfo + '_' + case)
 
+#%%
 for i_vessel in range(len(dpoints_original)):
 
     vessel_name = dpoints_original["points{}".format(i_vessel)][0]
@@ -108,6 +109,10 @@ for i_vessel in range(len(dpoints_original)):
     plot_original_points = pv.PolyData(
         dpoints_original["points{}".format(i_vessel)][1])
     check_vessels_plot.add_mesh(plot_original_points,label=vessel_name,color='w')
+    plot_original_points["vectors"] = dvectors_original["vectors{}".format(i_vessel)][1]*0.001
+    
+    plot_original_points.set_active_vectors("vectors")
+    check_vessels_plot.add_mesh(plot_original_points.arrows, lighting=False)
     
     plot_cleaned_points = pv.PolyData(
         dpoints_cleaned["points{}".format(i_vessel)][1])
@@ -116,21 +121,16 @@ for i_vessel in range(len(dpoints_original)):
     check_vessels_plot.add_legend(size=(.2, .2), loc='upper right')
     check_vessels_plot.show()
     
-# #%% Plot extracted regions
+#%% Plot extracted regions
 
-# results_path = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/" + "dissipation_viscous/"
+results_path = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/" + "dissipation_viscous/"
 
-# # Read in indices corresponding to each region in the original mesh
-# dcenterindices = load_dict(results_path +'centerpoint_indices_' + pinfo + '_' + case)
+# Read in indices corresponding to each region in the original mesh
+dcenterindices = load_dict(results_path +'centerpoint_indices_' + pinfo + '_' + case)
 
-# # Get list of vessel names
-# all_region_names = [dcenterindices.get("indices{}".format(i_region))[0] for i_region in range(0,len(dcenterindices))]
-# num_regions = len(all_region_names)
-
-
-
-
-
+# Get list of vessel names
+all_region_names = [dcenterindices.get("indices{}".format(i_region))[0] for i_region in range(0,len(dcenterindices))]
+num_regions = len(all_region_names)
 
 
 
