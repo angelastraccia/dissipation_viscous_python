@@ -93,8 +93,8 @@ def get_list_files_dat(pinfo, case, num_cycle):
 
 # condition_list = ["baseline","vasospasm"]
 
-patient_list = ['pt40']
-condition_list= ['baseline','vasospasm']
+patient_list = ['pt2']
+condition_list= ['baseline'] #,'vasospasm']
 
 for pinfo in patient_list:
     for case in condition_list:
@@ -167,14 +167,18 @@ for pinfo in patient_list:
         vessel_name_list = ['L_MCA','R_MCA','L_A1','L_A2','R_A1','R_A2',
                             'L_PCOM','L_P1','L_P2','R_PCOM','R_P1','R_P2',
                             'BAS','L_TICA','R_TICA']
+        #%%
+        legend_vessel_name_list = ['Left MCA','Right MCA','Left A1','Left A2','Right A1','Right A2',
+                            'Left Pcom','Left P1','Left P2','Right Pcom','Right P2',
+                            'Basilar','Left TICA','Right TICA']
         
-        #Define a discretized color map
-        cmap = plt.get_cmap('jet')
-        colors = cmap(np.linspace(0, 1, num_vessels))
+        #%%Define a discretized color map
+        cmap = plt.get_cmap('inferno')
+        colors = cmap(np.linspace(0, 1.25, num_vessels))
         
         plot_segments = pv.Plotter()
         
-        plot_segments.add_mesh(stl_surf_m, opacity=0.3)
+        plot_segments.add_mesh(stl_surf_m, opacity=0.075)
         plot_segments.background_color = 'w'
         
         
@@ -182,6 +186,7 @@ for pinfo in patient_list:
         for i_vessel in range(num_vessels):
             
             vessel_name = dcenterindices.get("indices{}".format(i_vessel))[0]
+            
             #print(vessel_name)
             
             if vessel_name in vessel_name_list:
@@ -190,9 +195,9 @@ for pinfo in patient_list:
                 branch_segment_extracted = mesh_data_final.extract_cells(branch_center_point_indices)
                 
                 # Plot the branch colored by the branch ID
-                plot_segments.add_mesh(branch_segment_extracted, color=colors[i_vessel], label=vessel_name)
+                plot_segments.add_mesh(branch_segment_extracted, color=colors[i_vessel], label=legend_vessel_name_list[i_vessel])
         
-        plot_segments.add_legend(size=(.3, .3), loc='upper right',bcolor='w')
+        plot_segments.add_legend(size=(.4, .4), loc='upper right',bcolor='w')
         plot_segments.show()
         
 
