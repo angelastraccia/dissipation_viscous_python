@@ -79,7 +79,7 @@ def calculate_dissipation(pinfo, case, i_vessel, ddissipation):
     dissipation_in_time = [ddissipation.get("{}".format(data_indices[k])).get("dissipation{}".format(i_vessel))[1]
         for k in range(len_cycle)]
     
-    # Dissipation in micro watts
+    # Integrated issipation in micro watts * m^3
     dissipation = np.mean(dissipation_in_time)*1e6
     
     # Volume in mm^2
@@ -90,7 +90,7 @@ def calculate_dissipation(pinfo, case, i_vessel, ddissipation):
         "dissipation{}".format(i_vessel))[3]
         for k in range(len_cycle)]
 
-    # Dissipation per volume in W/m^2
+    # Dissipation in W
     dissipation_per_volume = np.mean(dissipation_per_volume_in_time)
 
     return dissipation, volume, dissipation_per_volume
@@ -134,13 +134,12 @@ cmap = cm.get_cmap('RdPu')
 N_colors = 10
 color_range = cmap(np.linspace(0,1,N_colors))
 percent_diff_min = 0
-percent_diff_max = 2000
+percent_diff_max = 1000
 dissipation_percent_difference_range = np.linspace(percent_diff_min,percent_diff_max,N_colors)
 
 # Instantiate variables
 df_all_vessels = pd.DataFrame()
 df_colors_all_vessels = pd.DataFrame()
-dresistance_bas, dresistance_vas = {}, {}
 
 for i_vessel in range(num_vessels):
     
