@@ -270,35 +270,39 @@ for i_vessel in range(num_vessels):
     #df_vessel.loc()
     df_all_vessels = pd.concat([df_all_vessels,df_vessel])
     
-    # %% Create a plot
+    # % Create a plot
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(10, 25))
     plt.rcParams["axes.grid"] = True
-    plt.rcParams.update({"grid.color": "0.5","grid.linestyle": "-","grid.linewidth": 1})
+    plt.rcParams.update({"grid.color": "0.5","grid.linestyle": "-","grid.linewidth": 0.5})
 
     plot_volume_dissipation_vs_subzone(integrated_dissipation_bas, volume_bas, dissipation_bas, "baseline", ax1, ax2, ax3, ax4)
     plot_volume_dissipation_vs_subzone(integrated_dissipation_vas, volume_vas, dissipation_vas, "vasospasm", ax1, ax2, ax3, ax4)
 
     fig.suptitle(vessel_name,fontsize = 40)
+    subtitle_fontsize = 30
 
     ax1.set_ylim([0, None])
-    ax1.set_title("Volume [mm^3]")
-    ax1.legend(fontsize="medium",facecolor="white")
+    ax1.set_title("Volume [mm^3]",fontsize = subtitle_fontsize)
+    ax1.legend(fontsize="large",facecolor="white")
     ax1.set_facecolor('white')
     
     ax2.set_ylim([0, None])
-    ax2.set_title("Integrated dissipation [W*mm^3]")
-    ax2.legend(fontsize="medium",facecolor="white")
+    ax2.set_title("Integrated dissipation [W*mm^3]",fontsize = subtitle_fontsize)
+    ax2.legend(fontsize="large",facecolor="white")
     ax2.set_facecolor('white')
     
     ax3.set_ylim([0, None])
-    ax3.set_title("Dissipation [W]")
-    ax3.legend(fontsize="medium",facecolor="white")
+    ax3.set_title("Dissipation [W]",fontsize = subtitle_fontsize)
+    ax3.legend(fontsize="large",facecolor="white")
     ax3.set_facecolor('white')
     
-    ax4.set_title("Percent of total dissipation [%]")
-    ax4.legend(fontsize="medium",facecolor="white")
+    ax4.set_title("Percent of total dissipation [%]",fontsize = subtitle_fontsize)
+    ax4.legend(fontsize="large",facecolor="white")
     ax4.set_facecolor('white')
     ax4.set_ylim([0, 50])
+    
+    plt.savefig(figure_path_baseline + "/dissipation_subzones_" + vessel_name+ ".png")
+    plt.savefig(figure_path_vasospasm + "/dissipation_subzones_"  + vessel_name + ".png")
     
 
 #%% Plot heat map
@@ -331,7 +335,5 @@ plt.savefig(figure_path_vasospasm + "plot_heatmap_dissipation_threshold_" + str(
 
 
 
-# plt.savefig(figure_path_baseline + "plot_heatmap_dissipation_threshold_" + str(percent_diff_max) + "_" + pinfo + ".png")
-# plt.savefig(figure_path_vasospasm + "plot_heatmap_dissipation_threshold_" + str(percent_diff_max) + "_" + pinfo + ".png")
 
 
