@@ -185,9 +185,29 @@ def main(pinfo,case):
     print('Saved dissipation dictionary')
 
 
-main('pt40','vasospasm')
-# main('pt39','baseline')
+main('pt1','baseline')
+main('pt1','vasospasm')
 
+main('pt29','baseline')
+main('pt29','vasospasm')
+
+main('vsp5','baseline')
+main('vsp5','vasospasm')
+
+main('pt7','baseline')
+main('pt7','vasospasm')
+
+main('vsp26','baseline')
+main('vsp26','vasospasm')
+
+main('pt1','baseline')
+main('pt1','vasospasm')
+
+main('vsp4','baseline')
+main('vsp4','vasospasm')
+
+main('pt12','baseline')
+main('pt12','vasospasm')
 
 
 
