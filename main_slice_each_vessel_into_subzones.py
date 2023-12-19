@@ -188,110 +188,92 @@ def clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,slice_index,invert_sta
 
 #%%
 
-# Define patient info
-pinfo = 'pt40' #input('Patient -- ')
-case = 'vasospasm' #baseline' #input('Condition -- ')
-plot_flag = 1 #int(input('Plot figures? 1 = yes -- '))
-num_cycle = 2
+# # Define patient info
+# pinfo = 'pt40' #input('Patient -- ')
+# case = 'vasospasm' #baseline' #input('Condition -- ')
 
-# Paths
-geometry_path = "L:/vasospasm/"+pinfo+"/" + case + "/1-geometry/"
-dissipation_path = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/" + "dissipation_viscous/"
-results_path = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/" + "dissipation_viscous/"
+def main(pinfo, case):
 
-# Read in STL of surface
-fname_stl_m = geometry_path + pinfo + '_' + case + '_final.stl'
-stl_surf_m = pv.read(fname_stl_m)
 
-# Read in centerlines, vectors, etc.
-centerline_data_path = "L:/vasospasm/"+pinfo+"/" + case + "/4-results/pressure_resistance/"
-dvectors = load_dict(centerline_data_path +"vectors_" + pinfo + "_" + case)
-dpoints = load_dict(centerline_data_path +"points_" + pinfo + "_" + case)
-dradii= load_dict(centerline_data_path +"radii_" + pinfo + "_" + case)
-dcenterindices = load_dict(dissipation_path +'centerpoint_indices_' + pinfo + '_' + case)
-
-# Get list of filenames
-i_data = 0
-onlyfiles, data_indices, pathwd = get_list_files_dat(pinfo,case,num_cycle)
-data_filename = results_path + data_indices[i_data] + '_epsilon.dat'
-
-# Read in Tecplot data file
-tic = time.perf_counter()
-reader = pv.get_reader(data_filename)
-mesh_data_imported = reader.read()
-mesh_data_final = mesh_data_imported[0]
-print(mesh_data_final.cell_data)
-toc = time.perf_counter()
-time_minutes = (toc-tic)/60
-print(f"Data import took {time_minutes:0.4f} minutes")
-
-#%% Identify centerpoints and normal vectors
-
-# Plotting settings
-plot_flag = 0
-cmap = plt.get_cmap('inferno')
-num_vessels = len(dpoints)
-dcenterindices_vessel_subzones = {}
-
-for i_vessel in range(0,num_vessels):
-    vessel_name = dpoints["points{}".format(i_vessel)][0]
-    centerpoints = dpoints["points{}".format(i_vessel)][1] 
-    num_points = len(centerpoints)
-    vectors = dvectors["vectors{}".format(i_vessel)][1] 
-
-    # Define a discretized color map
-    colors = cmap(np.linspace(0, .8, num_points+1))
+    plot_flag = 1 #int(input('Plot figures? 1 = yes -- '))
+    num_cycle = 2
     
-    #%Extract vessel zone
-    region_name = dcenterindices.get("indices{}".format(i_vessel))[0]
-    centerpoint_indices = dcenterindices.get("indices{}".format(i_vessel))[1]
+    # Paths
+    geometry_path = "L:/vasospasm/"+pinfo+"/" + case + "/1-geometry/"
+    dissipation_path = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/" + "dissipation_viscous/"
+    results_path = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/" + "dissipation_viscous/"
     
-    region_mesh = mesh_data_final.extract_cells(centerpoint_indices)
+    # Read in STL of surface
+    fname_stl_m = geometry_path + pinfo + '_' + case + '_final.stl'
+    stl_surf_m = pv.read(fname_stl_m)
     
-    #% Slice into smaller zones
-    num_slices = num_points - 1
-    tuple_centerindices = (vessel_name,)
+    # Read in centerlines, vectors, etc.
+    centerline_data_path = "L:/vasospasm/"+pinfo+"/" + case + "/4-results/pressure_resistance/"
+    dvectors = load_dict(centerline_data_path +"vectors_" + pinfo + "_" + case)
+    dpoints = load_dict(centerline_data_path +"points_" + pinfo + "_" + case)
+    dradii= load_dict(centerline_data_path +"radii_" + pinfo + "_" + case)
+    dcenterindices = load_dict(dissipation_path +'centerpoint_indices_' + pinfo + '_' + case)
     
-    p = pv.Plotter()
-    p.add_mesh(stl_surf_m , opacity=0.2, color='white')
+    # Get list of filenames
+    i_data = 0
+    onlyfiles, data_indices, pathwd = get_list_files_dat(pinfo,case,num_cycle)
+    data_filename = results_path + data_indices[i_data] + '_epsilon.dat'
     
-    plot_original_points = pv.PolyData(centerpoints)
-    p.add_mesh(plot_original_points,label=vessel_name,color='b')
-    plot_original_points["vectors"] = vectors*0.001
-    plot_original_points.set_active_vectors("vectors")
-    p.add_mesh(plot_original_points.arrows, lighting=False)
+    # Read in Tecplot data file
+    tic = time.perf_counter()
+    reader = pv.get_reader(data_filename)
+    mesh_data_imported = reader.read()
+    mesh_data_final = mesh_data_imported[0]
+    print(mesh_data_final.cell_data)
+    toc = time.perf_counter()
+    time_minutes = (toc-tic)/60
+    print(f"Data import took {time_minutes:0.4f} minutes")
     
+    #%% Identify centerpoints and normal vectors
     
-    # Slice with first plane and centerpoint
-    # Choose direction of slice
-    vessel_subzone_first_slice_index = 1
-    invert_status = False
+    # Plotting settings
+    plot_flag = 0
+    cmap = plt.get_cmap('inferno')
+    num_vessels = len(dpoints)
+    dcenterindices_vessel_subzones = {}
+    
+    for i_vessel in range(0,num_vessels):
+        vessel_name = dpoints["points{}".format(i_vessel)][0]
+        centerpoints = dpoints["points{}".format(i_vessel)][1] 
+        num_points = len(centerpoints)
+        vectors = dvectors["vectors{}".format(i_vessel)][1] 
+    
+        # Define a discretized color map
+        colors = cmap(np.linspace(0, .8, num_points+1))
         
-    vessel_subzone = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,vessel_subzone_first_slice_index,invert_status,region_mesh,stl_surf_m, plot_flag)
-    
-    # Identify the centerpoints for the segment with respect to the original mesh
-    vessel_subzone_centers = vessel_subzone.cell_centers()
-    vessel_subzone_center_points = vessel_subzone_centers.points
-    vessel_subzone_center_point_indices = mesh_data_final.find_containing_cell(vessel_subzone_center_points)
-    vessel_subzone_segment_extracted = mesh_data_final.extract_cells(vessel_subzone_center_point_indices)
-    
-    p.add_mesh(vessel_subzone_segment_extracted,color=colors[vessel_subzone_first_slice_index])
-    
-    tuple_centerindices = tuple_centerindices + (vessel_subzone_center_point_indices,)
-    
-    #% Slice intermediate locations with two planes
-     
-    for vessel_subzone_first_slice_index in range(2,num_slices+1):
+        #%Extract vessel zone
+        region_name = dcenterindices.get("indices{}".format(i_vessel))[0]
+        centerpoint_indices = dcenterindices.get("indices{}".format(i_vessel))[1]
+        
+        region_mesh = mesh_data_final.extract_cells(centerpoint_indices)
+        
+        #% Slice into smaller zones
+        num_slices = num_points - 1
+        tuple_centerindices = (vessel_name,)
+        
+        if plot_flag == 1:
+        
+            p = pv.Plotter()
+            p.add_mesh(stl_surf_m , opacity=0.2, color='white')
+            
+            plot_original_points = pv.PolyData(centerpoints)
+            p.add_mesh(plot_original_points,label=vessel_name,color='b')
+            plot_original_points["vectors"] = vectors*0.001
+            plot_original_points.set_active_vectors("vectors")
+            p.add_mesh(plot_original_points.arrows, lighting=False)
+        
+        
+        # Slice with first plane and centerpoint
+        # Choose direction of slice
+        vessel_subzone_first_slice_index = 1
         invert_status = False
-        vessel_subzone_largest = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,vessel_subzone_first_slice_index,invert_status,region_mesh,stl_surf_m, plot_flag)
-        
-        if invert_status == False:
-            invert_status = True
-        else:
-            invert_status = False
-        
-        vessel_subzone_second_slice_index = vessel_subzone_first_slice_index - 1 
-        vessel_subzone, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,vessel_subzone_second_slice_index,invert_status,vessel_subzone_largest,stl_surf_m,plot_flag)
+            
+        vessel_subzone = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,vessel_subzone_first_slice_index,invert_status,region_mesh,stl_surf_m, plot_flag)
         
         # Identify the centerpoints for the segment with respect to the original mesh
         vessel_subzone_centers = vessel_subzone.cell_centers()
@@ -300,27 +282,68 @@ for i_vessel in range(0,num_vessels):
         vessel_subzone_segment_extracted = mesh_data_final.extract_cells(vessel_subzone_center_point_indices)
         
         
-        p.add_mesh(vessel_subzone_segment_extracted,color=colors[vessel_subzone_first_slice_index])
-            
+        if plot_flag == 1:
+            p.add_mesh(vessel_subzone_segment_extracted,color=colors[vessel_subzone_first_slice_index])
+        
         tuple_centerindices = tuple_centerindices + (vessel_subzone_center_point_indices,)
+        
+        #% Slice intermediate locations with two planes
+         
+        for vessel_subzone_first_slice_index in range(2,num_slices+1):
+            invert_status = False
+            vessel_subzone_largest = clip_mesh_by_largest(dpoints,dvectors,dradii,i_vessel,vessel_subzone_first_slice_index,invert_status,region_mesh,stl_surf_m, plot_flag)
+            
+            if invert_status == False:
+                invert_status = True
+            else:
+                invert_status = False
+            
+            vessel_subzone_second_slice_index = vessel_subzone_first_slice_index - 1 
+            vessel_subzone, branch_id = clip_mesh_by_regionid(dpoints,dvectors,dradii,i_vessel,vessel_subzone_second_slice_index,invert_status,vessel_subzone_largest,stl_surf_m,plot_flag)
+            
+            # Identify the centerpoints for the segment with respect to the original mesh
+            vessel_subzone_centers = vessel_subzone.cell_centers()
+            vessel_subzone_center_points = vessel_subzone_centers.points
+            vessel_subzone_center_point_indices = mesh_data_final.find_containing_cell(vessel_subzone_center_points)
+            vessel_subzone_segment_extracted = mesh_data_final.extract_cells(vessel_subzone_center_point_indices)
+            
+            if plot_flag == 1:
+                p.add_mesh(vessel_subzone_segment_extracted,color=colors[vessel_subzone_first_slice_index])
+                
+            tuple_centerindices = tuple_centerindices + (vessel_subzone_center_point_indices,)
+        
+        if plot_flag == 1:
+            p.add_mesh(region_mesh,opacity=0.7)
+            p.show()
+           
+        # Save centerindices
+        dcenterindices_vessel_subzones["indices{}".format(i_vessel)] = tuple_centerindices
     
-    p.add_mesh(region_mesh,opacity=0.7)
-    p.show()
-       
-    # Save centerindices
-    dcenterindices_vessel_subzones["indices{}".format(i_vessel)] = tuple_centerindices
+    
+    save_dict(dcenterindices_vessel_subzones, results_path +'centerpoint_indices_vessel_subzones_' + pinfo + '_' + case)
+        
+    print(pinfo + " " + case + " saved dictionary")
 
-#%%
+main('pt1','baseline')
+main('pt1','vasospasm')
 
-save_dict(dcenterindices_vessel_subzones, results_path +'centerpoint_indices_vessel_subzones_' + pinfo + '_' + case)
+main('pt29','baseline')
+main('pt29','vasospasm')
 
-print('Saved dictionaries')
+main('vsp5','baseline')
+main('vsp5','vasospasm')
 
+main('pt7','baseline')
+main('pt7','vasospasm')
 
+main('vsp26','baseline')
+main('vsp26','vasospasm')
 
+main('pt1','baseline')
+main('pt1','vasospasm')
 
+main('vsp4','baseline')
+main('vsp4','vasospasm')
 
-
-
-
-
+main('pt12','baseline')
+main('pt12','vasospasm')
