@@ -42,6 +42,21 @@ def load_dict(name):
         b = pickle.load(handle)
     return b
 
+def save_dict(dico, name):
+    """
+    Parameters
+    ----------
+    dico : dictionary one wants to save
+    name : str. path + name of the dictionary
+
+    Returns
+    -------
+    None.
+
+    """
+
+    with open(name + ".pkl", "wb") as f:
+        pickle.dump(dico, f)
 
 def get_list_files_dat(pinfo, case, num_cycle):
     """
@@ -71,7 +86,7 @@ def get_list_files_dat(pinfo, case, num_cycle):
 
     return onlyfiles, indices,pathwd
 
-def calculate_dissipation_vs_subzone(pinfo, case, i_vessel, ddissipation):
+def calculate_dissipation_vs_subzone(pinfo, case, i_vessel, ddissipation, dcenterpoints_subzones_updated):
 
     len_cycle = 30
     num_cycle = 2
@@ -83,28 +98,41 @@ def calculate_dissipation_vs_subzone(pinfo, case, i_vessel, ddissipation):
     volume = ddissipation.get("{}".format(data_indices[0])).get(
         "dissipation{}".format(i_vessel))[2]*1e6
     
+    # Dissipation integrated over volume in W*mm^3
     integrated_dissipation_in_time = np.array([ddissipation.get("{}".format(data_indices[k])).get("dissipation{}".format(i_vessel))[1]
         for k in range(len_cycle)])
     
     integrated_dissipation = np.zeros((3,num_subzones))
     
-    # Dissipation integrated over volume in W*mm^3
     integrated_dissipation[0,:] = np.min(integrated_dissipation_in_time,axis=0)*1e6
     integrated_dissipation[1,:] = np.mean(integrated_dissipation_in_time,axis=0)*1e6
     integrated_dissipation[2,:] = np.max(integrated_dissipation_in_time,axis=0)*1e6
     
+    # Dissipation in W
     dissipation_in_time = np.array([ddissipation.get("{}".format(data_indices[k])).get(
         "dissipation{}".format(i_vessel))[3]
         for k in range(len_cycle)])
 
-    # Dissipation in W
     dissipation = np.zeros((3,num_subzones))
     
     dissipation[0,:] = np.min(dissipation_in_time,axis=0)
     dissipation[1,:] = np.mean(dissipation_in_time,axis=0)
     dissipation[2,:] = np.max(dissipation_in_time,axis=0)
+    
+    reverse_flag = dcenterpoints_subzones_updated.get("indices{}".format(i_vessel))[-1]
+    
+    if reverse_flag == 1:
+        integrated_dissipation_ordered = np.fliplr(integrated_dissipation)
+        volume_ordered = volume[::-1]
+        dissipation_ordered = np.fliplr(dissipation)
+        print(vessel_name + " " + case + "  reversed")
+        
+    else:
+        integrated_dissipation_ordered = integrated_dissipation
+        volume_ordered = volume
+        dissipation_ordered = dissipation
 
-    return integrated_dissipation, volume, dissipation
+    return integrated_dissipation_ordered, volume_ordered, dissipation_ordered
 
 def plot_volume_dissipation_vs_subzone(integrated_dissipation, volume, dissipation, case, ax1, ax2, ax3, ax4):
     
@@ -154,24 +182,51 @@ def plot_subzones_pyvista(dcenterpoints_subzones, mesh_data_final,stl_surf):
     p.show()
     
     return 
+
+def assign_reverse_flag_subzones(dcenterpoints_subzones):
+
+    num_vessels = len(dcenterpoints_subzones)
+
+    dcenterpoints_subzones_updated = {}
+
+    for i_vessel in range(num_vessels):
+        
+       vessel_name = dcenterpoints_subzones.get("indices{}".format(i_vessel))[0]
+       #print(vessel_name)
+       
+       reverse_flag = int(input(vessel_name + ': Reverse direction of segment? 0: no, 1: yes -- ' ))
+       
+       num_subzones = len(dcenterpoints_subzones.get("indices{}".format(i_vessel)))-1
+       
+       if reverse_flag == 1:
+           dcenterpoints_subzones_updated["indices{}".format(i_vessel)] = (vessel_name, ) + dcenterpoints_subzones["indices{}".format(i_vessel)][::-1][0:num_subzones] + (reverse_flag, )
+           
+       elif reverse_flag == 0:
+           dcenterpoints_subzones_updated["indices{}".format(i_vessel)] = dcenterpoints_subzones["indices{}".format(i_vessel)] + (reverse_flag, )
+       
+       else:
+           print ('Invalid flag')
+
+    return dcenterpoints_subzones_updated
+
 #%% Load data
 
-pinfo = 'pt40' #input('Patient number -- ')
+pinfo = 'pt1' #input('Patient number -- ')
 num_cycle = 2
 i_data = 0
-plot_subzones_flag = 0
+plot_subzones_flag = 1
 
 case = 'baseline'
 dissipation_path_baseline = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/dissipation_viscous/"
-resistance_path_baseline = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/pressure_resistance/"
-dpoints_bas = load_dict(resistance_path_baseline + "points_" + pinfo + "_" + case)
+#resistance_path_baseline = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/pressure_resistance/"
+#dpoints_bas = load_dict(resistance_path_baseline + "points_" + pinfo + "_" + case)
 ddissipation_bas = load_dict(dissipation_path_baseline + "dissipation_subzones_" + pinfo + "_" + case)
 dcenterpoints_subzones_bas = load_dict(dissipation_path_baseline + "centerpoint_indices_vessel_subzones_" + pinfo + "_" + case) 
 
 case = 'vasospasm'
 dissipation_path_vasospasm = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/dissipation_viscous/"
-resistance_path_vasospasm = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/pressure_resistance/"
-dpoints_vas = load_dict(resistance_path_vasospasm + "points_" + pinfo + "_" + case)
+#resistance_path_vasospasm = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/pressure_resistance/"
+#dpoints_vas = load_dict(resistance_path_vasospasm + "points_" + pinfo + "_" + case)
 ddissipation_vas = load_dict(dissipation_path_vasospasm + "dissipation_subzones_" + pinfo + "_" + case)
 dcenterpoints_subzones_vas = load_dict(dissipation_path_vasospasm + "centerpoint_indices_vessel_subzones_" + pinfo + "_" + case) 
 
@@ -194,16 +249,22 @@ if plot_subzones_flag == 1:
     mesh_data_final_vas = mesh_data_imported_vas[0]
     print(mesh_data_final_vas.cell_data)
     
-    # Read in STL of surface
-    fname_stl_bas = "L:/vasospasm/" + pinfo + "/" + case + "/1-geometry/" + pinfo + '_' + case + '_final.stl'
+    #% Read in STL of surface
+    fname_stl_bas = "L:/vasospasm/" + pinfo + "/baseline/1-geometry/" + pinfo + '_baseline_final.stl'
     stl_surf_bas = pv.read(fname_stl_bas)
-    fname_stl_vas = "L:/vasospasm/" + pinfo + "/" + case + "/1-geometry/" + pinfo + '_' + case + '_final.stl'
+    fname_stl_vas = "L:/vasospasm/" + pinfo + "/vasospasm/1-geometry/" + pinfo + '_vasospasm_final.stl'
     stl_surf_vas = pv.read(fname_stl_vas)
     
-    # # Plot subzones
+    # Plot subzones
+    plot_subzones_pyvista(dcenterpoints_subzones_bas, mesh_data_final_bas,stl_surf_bas)
+    dcenterpoints_subzones_bas_updated = assign_reverse_flag_subzones(dcenterpoints_subzones_bas)
+    plot_subzones_pyvista(dcenterpoints_subzones_bas_updated, mesh_data_final_bas,stl_surf_bas)
     
-    # plot_subzones_pyvista(dcenterpoints_subzones_bas, mesh_data_final_bas,stl_surf_bas)
-    # plot_subzones_pyvista(dcenterpoints_subzones_vas, mesh_data_final_vas,stl_surf_vas)
+    plot_subzones_pyvista(dcenterpoints_subzones_vas, mesh_data_final_vas,stl_surf_vas)
+    dcenterpoints_subzones_vas_updated = assign_reverse_flag_subzones(dcenterpoints_subzones_vas)
+    plot_subzones_pyvista(dcenterpoints_subzones_vas_updated, mesh_data_final_vas,stl_surf_vas)
+
+   
 
 #%% Remove existing directories and create new ones for figures
 # Save figures in both 4-results baseline and vasospasm directories
@@ -223,7 +284,7 @@ if not os.path.exists(figure_path_vasospasm):
 
    
 
-#%%
+#%% Plot dissipation vs distance
 
 # Define a color map for percent difference in dissipation
 cmap = cm.get_cmap('RdPu')
@@ -232,15 +293,14 @@ percent_diff_max = 1000
 
 # Instantiate variables
 df_all_vessels = pd.DataFrame()
-
 num_vessels = len(dcenterpoints_subzones_bas)
 
 for i_vessel in range(num_vessels):
     
-    vessel_name = dpoints_bas.get("points{}".format(i_vessel))[0]
+    vessel_name = dcenterpoints_subzones_bas.get("indices{}".format(i_vessel))[0]
     
-    integrated_dissipation_bas, volume_bas, dissipation_bas = calculate_dissipation_vs_subzone(pinfo, 'baseline', i_vessel, ddissipation_bas)
-    integrated_dissipation_vas, volume_vas, dissipation_vas = calculate_dissipation_vs_subzone(pinfo, 'vasospasm', i_vessel, ddissipation_vas)
+    integrated_dissipation_bas, volume_bas, dissipation_bas = calculate_dissipation_vs_subzone(pinfo, 'baseline', i_vessel, ddissipation_bas, dcenterpoints_subzones_bas_updated)
+    integrated_dissipation_vas, volume_vas, dissipation_vas = calculate_dissipation_vs_subzone(pinfo, 'vasospasm', i_vessel, ddissipation_vas, dcenterpoints_subzones_vas_updated)
     
     integrated_dissipation_bas_total = integrated_dissipation_bas[1,:].sum()
     volume_bas_total = volume_bas.sum()
@@ -334,6 +394,9 @@ plt.savefig(figure_path_baseline + "plot_heatmap_dissipation_threshold_" + str(p
 plt.savefig(figure_path_vasospasm + "plot_heatmap_dissipation_threshold_" + str(percent_diff_max) + "_" + pinfo + ".png")
 
 
+#%% Save dictionaries
 
+save_dict(dcenterpoints_subzones_bas_updated, dissipation_path_baseline +'centerpoint_indices_vessel_subzones_reversed_' + pinfo + '_baseline')
+save_dict(dcenterpoints_subzones_vas_updated, dissipation_path_vasospasm +'centerpoint_indices_vessel_subzones_reversed_' + pinfo + '_vasospasm')
 
 
