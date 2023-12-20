@@ -211,22 +211,18 @@ def assign_reverse_flag_subzones(dcenterpoints_subzones):
 
 #%% Load data
 
-pinfo = 'pt1' #input('Patient number -- ')
+pinfo = input('Patient number -- ')
 num_cycle = 2
 i_data = 0
 plot_subzones_flag = 1
 
 case = 'baseline'
 dissipation_path_baseline = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/dissipation_viscous/"
-#resistance_path_baseline = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/pressure_resistance/"
-#dpoints_bas = load_dict(resistance_path_baseline + "points_" + pinfo + "_" + case)
 ddissipation_bas = load_dict(dissipation_path_baseline + "dissipation_subzones_" + pinfo + "_" + case)
 dcenterpoints_subzones_bas = load_dict(dissipation_path_baseline + "centerpoint_indices_vessel_subzones_" + pinfo + "_" + case) 
 
 case = 'vasospasm'
 dissipation_path_vasospasm = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/dissipation_viscous/"
-#resistance_path_vasospasm = "L:/vasospasm/" + pinfo + "/" + case + "/4-results/pressure_resistance/"
-#dpoints_vas = load_dict(resistance_path_vasospasm + "points_" + pinfo + "_" + case)
 ddissipation_vas = load_dict(dissipation_path_vasospasm + "dissipation_subzones_" + pinfo + "_" + case)
 dcenterpoints_subzones_vas = load_dict(dissipation_path_vasospasm + "centerpoint_indices_vessel_subzones_" + pinfo + "_" + case) 
 
@@ -399,4 +395,4 @@ plt.savefig(figure_path_vasospasm + "plot_heatmap_dissipation_threshold_" + str(
 save_dict(dcenterpoints_subzones_bas_updated, dissipation_path_baseline +'centerpoint_indices_vessel_subzones_reversed_' + pinfo + '_baseline')
 save_dict(dcenterpoints_subzones_vas_updated, dissipation_path_vasospasm +'centerpoint_indices_vessel_subzones_reversed_' + pinfo + '_vasospasm')
 
-
+print('Saved dictionaries')
